@@ -1,3 +1,6 @@
 {
-    "name": "producteev/emogrifier"
+    "name": "lyoshenka/emogrifier"
+    "require": {
+        "php": ">=5.3",
+    },
 }
