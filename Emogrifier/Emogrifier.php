@@ -24,7 +24,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 class Emogrifier
 {
     const
@@ -164,10 +163,10 @@ class Emogrifier
 
         $css = preg_replace($search, $replace, $css);
 
-		// media queries to preserve
-		$regexp = '/^\s*@media\s[^{]+{.*}\s*}/misU';
-		preg_match_all($regexp, $css, $preserved_styles);
-		$css = preg_replace($regexp, '', $css);
+        // media queries to preserve
+        $regexp = '/^\s*@media\s[^{]+{.*}\s*}/misU';
+        preg_match_all($regexp, $css, $preserved_styles);
+        $css = preg_replace($regexp, '', $css);
 
         $csskey = md5($css);
         if (!isset($this->caches[static::CACHE_CSS][$csskey])) {
@@ -261,14 +260,14 @@ class Emogrifier
             }
         }
 
-		// add back in preserved media query styles
-		$style = $xmldoc->createElement('style');
-		$style->setAttribute('type', 'text/css');
-		$style->nodeValue = implode("\n", $preserved_styles[0]);
-		$body = $xpath->query('//body');
-		if ($body->length > 0) {
-			$body->item(0)->appendChild($style);
-		}
+        // add back in preserved media query styles
+        $style = $xmldoc->createElement('style');
+        $style->setAttribute('type', 'text/css');
+        $style->nodeValue = implode("\n", $preserved_styles[0]);
+        $body = $xpath->query('//body');
+        if ($body->length > 0) {
+            $body->item(0)->appendChild($style);
+        }
 
         if ($this->preserveEncoding) {
             return mb_convert_encoding($xmldoc->saveHTML(), $encoding, 'HTML-ENTITIES');
