@@ -1,44 +1,29 @@
 <?php
-/*
-UPDATES
 
-    2008-08-10  Fixed CSS comment stripping regex to add PCRE_DOTALL (changed from '/\/\*.*\*\//U' to '/\/\*.*\*\//sU')
-    2008-08-18  Added lines instructing DOMDocument to attempt to normalize HTML before processing
-    2008-10-20  Fixed bug with bad variable name... Thanks Thomas!
-    2008-03-02  Added licensing terms under the MIT License
-                Only remove unprocessable HTML tags if they exist in the array
-    2009-06-03  Normalize existing CSS (style) attributes in the HTML before we process the CSS.
-                Made it so that the display:none stripper doesn't require a trailing semi-colon.
-    2009-08-13  Added support for subset class values (e.g. "p.class1.class2").
-                Added better protection for bad css attributes.
-                Fixed support for HTML entities.
-    2009-08-17  Fixed CSS selector processing so that selectors are processed by precedence/specificity, and not just in order.
-    2009-10-29  Fixed so that selectors appearing later in the CSS will have precedence over identical selectors appearing earlier.
-    2009-11-04  Explicitly declared static functions static to get rid of E_STRICT notices.
-    2010-05-18  Fixed bug where full url filenames with protocols wouldn't get split improperly when we explode on ':'... Thanks Mark!
-                Added two new attribute selectors
-    2010-06-16  Added static caching for less processing overhead in situations where multiple emogrification takes place
-    2010-07-26  Fixed bug where '0' values were getting discarded because of php's empty() function... Thanks Scott!
-    2010-09-03  Added checks to invisible node removal to ensure that we don't try to remove non-existent child nodes of parents that have already been deleted
-    2011-04-08  Fixed errors in CSS->XPath conversion for adjacent sibling selectors and id/class combinations... Thanks Bob V.!
-    2011-06-08  Fixed an error where CSS @media types weren't being parsed correctly... Thanks Will W.!
-    2011-08-03  Fixed an error where an empty selector at the beginning of the CSS would cause a parse error on the next selector... Thanks Alexei T.!
-    2011-10-13  Fully fixed a bug introduced in 2011-06-08 where selectors at the beginning of the CSS would be parsed incorrectly... Thanks Thomas A.!
-    2011-10-26  Added an option to allow you to output emogrified code without extended characters being turned into HTML entities.
-                Moved static references to class attributes so they can be manipulated.
-                Added the ability to clear out the (formerly) static cache when CSS is reloaded.
-    2011-12-22  Fixed a bug that was overwriting existing inline styles from the original HTML... Thanks Sagi L.!
-    2012-01-31  Fixed a bug that was introduced with the 2011-12-22 revision... Thanks Sagi L. and M. Bąkowski!
-                Added extraction of <style> blocks within the HTML due to popular demand.
-                Added several new pseudo-selectors (first-child, last-child, nth-child, and nth-of-type).
-    2012-02-07  Fixed some recent code introductions to use class constants rather than global constants.
-                Fixed some recent code introductions to make it cleaner to read.
-    2012-05-01  Made removal of invisible nodes operate in a case-insensitive manner... Thanks Juha P.!
-*/
-
-
-namespace Emogrifier;
-
+/**
+ * The MIT License (MIT)
+ * 
+ * Copyright (c) 2008-2013 pelago
+ * Copyright (c) 2013 silverorange
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 class Emogrifier
 {
     const
@@ -122,14 +107,14 @@ class Emogrifier
         $encoding = mb_detect_encoding($body);
         $body = mb_convert_encoding($body, 'HTML-ENTITIES', $encoding);
 
-        $xmldoc = new \DOMDocument();
+        $xmldoc = new DOMDocument();
         $xmldoc->encoding = $encoding;
         $xmldoc->strictErrorChecking = false;
         $xmldoc->formatOutput = true;
         $xmldoc->loadHTML($body);
         $xmldoc->normalizeDocument();
 
-        $xpath = new \DOMXPath($xmldoc);
+        $xpath = new DOMXPath($xmldoc);
 
         // before be begin processing the CSS file, parse the document and normalize all existing CSS attributes (changes 'DISPLAY: none' to 'display: none');
         // we wouldn't have to do this if DOMXPath supported XPath 2.0.
@@ -166,7 +151,6 @@ class Emogrifier
             '/^\s*@import\s[^;]+;/misU', // strip out any import directives
             '/^\s*@media\s[^{]+{\s*}/misU', // strip any empty media enclosures
             '/^\s*@media\s+((aural|braille|embossed|handheld|print|projection|speech|tty|tv)\s*,*\s*)+{.*}\s*}/misU', // strip out all media types that are not 'screen' or 'all' (these don't apply to email)
-            '/^\s*@media\s[^{]+{(.*})\s*}/misU', // get rid of remaining media type enclosures
         );
 
         $replace = array(
@@ -178,6 +162,11 @@ class Emogrifier
         );
 
         $css = preg_replace($search, $replace, $css);
+
+        // media queries to preserve
+        $regexp = '/^\s*@media\s[^{]+{.*}\s*}/misU';
+        preg_match_all($regexp, $css, $preserved_styles);
+        $css = preg_replace($regexp, '', $css);
 
         $csskey = md5($css);
         if (!isset($this->caches[static::CACHE_CSS][$csskey])) {
@@ -269,6 +258,15 @@ class Emogrifier
                     $node->parentNode->removeChild($node);
                 }
             }
+        }
+
+        // add back in preserved media query styles
+        $style = $xmldoc->createElement('style');
+        $style->setAttribute('type', 'text/css');
+        $style->nodeValue = implode("\n", $preserved_styles[0]);
+        $body = $xpath->query('//body');
+        if ($body->length > 0) {
+            $body->item(0)->appendChild($style);
         }
 
         if ($this->preserveEncoding) {
