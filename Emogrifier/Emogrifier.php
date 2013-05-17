@@ -25,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-namespace Emogrifier;
-
 class Emogrifier
 {
     const
@@ -110,14 +108,14 @@ class Emogrifier
         $encoding = mb_detect_encoding($body);
         $body = mb_convert_encoding($body, 'HTML-ENTITIES', $encoding);
 
-        $xmldoc = new \DOMDocument();
+        $xmldoc = new DOMDocument();
         $xmldoc->encoding = $encoding;
         $xmldoc->strictErrorChecking = false;
         $xmldoc->formatOutput = true;
         $xmldoc->loadHTML($body);
         $xmldoc->normalizeDocument();
 
-        $xpath = new \DOMXPath($xmldoc);
+        $xpath = new DOMXPath($xmldoc);
 
         // before be begin processing the CSS file, parse the document and normalize all existing CSS attributes (changes 'DISPLAY: none' to 'display: none');
         // we wouldn't have to do this if DOMXPath supported XPath 2.0.
