@@ -48,6 +48,13 @@ class Emogrifier
     // if you would like to preserve your original encoding, set this attribute to true.
     public $preserveEncoding = false;
 
+    /**
+     * Specifies whether to overwrite previous style rules with the same name
+     * (default behaviour) or keep the previous style rules and ignore the new.
+     * @var bool
+     */
+    public $overwriteDuplicateStyles = true;
+
     public function __construct($html = '', $css = '')
     {
         $this->html = $html;
@@ -216,8 +223,12 @@ class Emogrifier
                     $oldStyleArr = $this->cssStyleDefinitionToArray($node->getAttribute('style'));
                     $newStyleArr = $this->cssStyleDefinitionToArray($value['attributes']);
 
-                    // new styles overwrite the old styles (not technically accurate, but close enough)
-                    $combinedArr = array_merge($oldStyleArr,$newStyleArr);
+                    // New styles overwrite the old styles by default (not technically accurate, but close enough)
+                    // Set the $overwriteDuplicateStyles to false to keep old styles if present.
+                    $combinedArr = $this->overwriteDuplicateStyles
+                                 ? array_merge($oldStyleArr,$newStyleArr)
+                                 : array_merge($newStyleArr,$oldStyleArr);
+
                     $style = '';
                     foreach ($combinedArr as $k => $v) {
                         $style .= (strtolower($k) . ':' . $v . ';');
