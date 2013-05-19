@@ -40,6 +40,7 @@ class Emogrifier
         $html = '',
         $css = '',
         $unprocessableHTMLTags = array('wbr'),
+        $excludedSelectors = array(),
         $caches = array();
 
     // this attribute applies to the case where you want to preserve your original text encoding.
@@ -98,6 +99,22 @@ class Emogrifier
     {
         if (($key = array_search($tag,$this->unprocessableHTMLTags)) !== false) {
             unset($this->unprocessableHTMLTags[$key]);
+        }
+    }
+
+    // there are some HTML tags that DOMDocument cannot process, and will throw an error if it encounters them.
+    // in particular, DOMDocument will complain if you try to use HTML5 tags in an XHTML document.
+    // these functions allow you to add/remove them if necessary.
+    // it only strips them from the code (does not remove actual nodes).
+    public function addExcludedSelector($selector)
+    {
+        $this->excludedSelectors[] = $selector;
+    }
+
+    public function removeExcludedSelector($selector)
+    {
+        if (($key = array_search($selector,$this->excludedSelectors)) !== false) {
+            unset($this->excludedSelectors[$key]);
         }
     }
 
@@ -212,12 +229,29 @@ class Emogrifier
             $this->caches[static::CACHE_CSS][$csskey] = $all_selectors;
         }
 
+        // Prepare the list of excluded nodes for this HTML
+        $excludedNodes = array();
+        foreach ($this->excludedSelectors as $selectorString) {
+            foreach (explode(',', $selectorString) as $selector) {
+                foreach ($xpath->query($this->translateCSStoXpath(trim($selector))) as $node) {
+                    $excludedNodes[] = $node;
+                }
+            }
+        }
+
         foreach ($this->caches[static::CACHE_CSS][$csskey] as $value) {
 
             // query the body for the xpath selector
             $nodes = $xpath->query($this->translateCSStoXpath(trim($value['selector'])));
 
             foreach ($nodes as $node) {
+                // Exclude any nodes selected through the $excludeNodes attribute
+                foreach ($excludedNodes as $excludedNode) {
+                    if ($excludedNode->isSameNode($node)) {
+                        continue 2;
+                    }
+                }
+
                 // if it has a style attribute, get it, process it, and append (overwrite) new stuff
                 if ($node->hasAttribute('style')) {
                     // break it up into an associative array
