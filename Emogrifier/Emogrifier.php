@@ -273,12 +273,14 @@ class Emogrifier
         }
 
         // add back in preserved media query styles
-        $style = $xmldoc->createElement('style');
-        $style->setAttribute('type', 'text/css');
-        $style->nodeValue = implode("\n", $preserved_styles[0]);
-        $body = $xpath->query('//body');
-        if ($body->length > 0) {
-            $body->item(0)->appendChild($style);
+        if (!empty($preserved_styles[0])) {
+            $style = $xmldoc->createElement('style');
+            $style->setAttribute('type', 'text/css');
+            $style->nodeValue = implode("\n", $preserved_styles[0]);
+            $body = $xpath->query('//body');
+            if ($body->length > 0) {
+                $body->item(0)->appendChild($style);
+            }
         }
 
         if ($this->preserveEncoding) {
