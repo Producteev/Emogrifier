@@ -1,6 +1,6 @@
 {
-    "name": "lyoshenka/emogrifier"
+    "name": "lyoshenka/emogrifier",
     "require": {
         "php": ">=5.3",
-    },
+    }
 }
