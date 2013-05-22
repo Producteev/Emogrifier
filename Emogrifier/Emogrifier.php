@@ -67,7 +67,7 @@ class Emogrifier
     public function setCSS($css = '')
     {
         $this->css = $css;
-        $this->clearCache(static::CACHE_CSS);
+        $this->clearCache(self::CACHE_CSS);
     }
 
     public function clearCache($key = null)
@@ -78,9 +78,9 @@ class Emogrifier
             }
         } else {
             $this->caches = array(
-                static::CACHE_CSS       => array(),
-                static::CACHE_SELECTOR  => array(),
-                static::CACHE_XPATH     => array(),
+                self::CACHE_CSS       => array(),
+                self::CACHE_SELECTOR  => array(),
+                self::CACHE_XPATH     => array(),
             );
         }
     }
@@ -177,7 +177,7 @@ class Emogrifier
         $css = preg_replace($regexp, '', $css);
 
         $csskey = md5($css);
-        if (!isset($this->caches[static::CACHE_CSS][$csskey])) {
+        if (!isset($this->caches[self::CACHE_CSS][$csskey])) {
 
             // process the CSS file for selectors and definitions
             preg_match_all('/(^|[^{}])\s*([^{]+){([^}]*)}/mis', $css, $matches, PREG_SET_ORDER);
@@ -209,10 +209,10 @@ class Emogrifier
             // now sort the selectors by precedence
             usort($all_selectors, array($this,'sortBySelectorPrecedence'));
 
-            $this->caches[static::CACHE_CSS][$csskey] = $all_selectors;
+            $this->caches[self::CACHE_CSS][$csskey] = $all_selectors;
         }
 
-        foreach ($this->caches[static::CACHE_CSS][$csskey] as $value) {
+        foreach ($this->caches[self::CACHE_CSS][$csskey] as $value) {
 
             // query the body for the xpath selector
             $nodes = $xpath->query($this->translateCSStoXpath(trim($value['selector'])));
@@ -303,7 +303,7 @@ class Emogrifier
     protected function getCSSSelectorPrecedence($selector)
     {
         $selectorkey = md5($selector);
-        if (!isset($this->caches[static::CACHE_SELECTOR][$selectorkey])) {
+        if (!isset($this->caches[self::CACHE_SELECTOR][$selectorkey])) {
             $precedence = 0;
             $value = 100;
             $search = array('\#','\.',''); // ids: worth 100, classes: worth 10, elements: worth 1
@@ -317,10 +317,10 @@ class Emogrifier
                 $precedence += ($value * $num);
                 $value /= 10;
             }
-            $this->caches[static::CACHE_SELECTOR][$selectorkey] = $precedence;
+            $this->caches[self::CACHE_SELECTOR][$selectorkey] = $precedence;
         }
 
-        return $this->caches[static::CACHE_SELECTOR][$selectorkey];
+        return $this->caches[self::CACHE_SELECTOR][$selectorkey];
     }
 
     // right now we support all CSS 1 selectors and most CSS2/3 selectors.
@@ -329,7 +329,7 @@ class Emogrifier
     {
         $css_selector = trim($css_selector);
         $xpathkey = md5($css_selector);
-        if (!isset($this->caches[static::CACHE_XPATH][$xpathkey])) {
+        if (!isset($this->caches[self::CACHE_XPATH][$xpathkey])) {
             // returns an Xpath selector
             $search = array(
                '/\s+>\s+/', // Matches any element that is a child of parent.
@@ -362,10 +362,10 @@ class Emogrifier
             $css_selector = preg_replace_callback('/([^\/]+):nth-child\(\s*(odd|even|[+\-]?\d|[+\-]?\d?n(\s*[+\-]\s*\d)?)\s*\)/i', array($this, 'translateNthChild'), $css_selector);
             $css_selector = preg_replace_callback('/([^\/]+):nth-of-type\(\s*(odd|even|[+\-]?\d|[+\-]?\d?n(\s*[+\-]\s*\d)?)\s*\)/i', array($this, 'translateNthOfType'), $css_selector);
 
-            $this->caches[static::CACHE_SELECTOR][$xpathkey] = $css_selector;
+            $this->caches[self::CACHE_SELECTOR][$xpathkey] = $css_selector;
         }
 
-        return $this->caches[static::CACHE_SELECTOR][$xpathkey];
+        return $this->caches[self::CACHE_SELECTOR][$xpathkey];
     }
 
     protected function translateNthChild($match)
