@@ -96,9 +96,8 @@ class Emogrifier
 
     public function removeUnprocessableHTMLTag($tag)
     {
-        if (($key = array_search($tag,$this->unprocessableHTMLTags)) !== false) {
-            unset($this->unprocessableHTMLTags[$key]);
-        }
+		$this->unprocessableHTMLTags = array_diff($this->unprocessableHTMLTags,
+			array($tag));
     }
 
     // there are some HTML tags that DOMDocument cannot process, and will throw an error if it encounters them.
@@ -112,9 +111,8 @@ class Emogrifier
 
     public function removeExcludedSelector($selector)
     {
-        if (($key = array_search($selector,$this->excludedSelectors)) !== false) {
-            unset($this->excludedSelectors[$key]);
-        }
+		$this->excludedSelectors = array_diff($this->excludedSelectors,
+			array($selector));
     }
 
     // applies the CSS you submit to the html you submit. places the css inline
