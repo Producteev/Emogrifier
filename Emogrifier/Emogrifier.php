@@ -32,6 +32,10 @@ class Emogrifier
         CACHE_SELECTOR = 1,
         CACHE_XPATH = 2,
 
+        // output modes
+        FILTER_DOCUMENT = 0,
+        FILTER_BODY = 1,
+
         // for calculating nth-of-type and nth-child selectors
         INDEX = 0,
         MULTIPLIER = 1;
@@ -56,6 +60,12 @@ class Emogrifier
      * @var bool
      */
     public $overwriteDuplicateStyles = true;
+
+    /**
+     * Customize how output is filtered.
+     * @var int
+     */
+    public $filterOutput = self::FILTER_DOCUMENT;
 
     public function __construct($html = '', $css = '')
     {
@@ -137,6 +147,12 @@ class Emogrifier
         $xmldoc->strictErrorChecking = false;
         $xmldoc->formatOutput = true;
         $xmldoc->loadHTML($body);
+        if ($this->filterOutput === self::FILTER_BODY) {
+            // remove <!DOCTYPE
+            $xmldoc->removeChild($xmldoc->firstChild);
+            // remove <html><body></body></html>
+            $xmldoc->replaceChild($xmldoc->firstChild->firstChild->firstChild, $xmldoc->firstChild);
+        }
         $xmldoc->normalizeDocument();
 
         $xpath = new DOMXPath($xmldoc);
