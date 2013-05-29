@@ -128,7 +128,7 @@ class Emogrifier
         }
     }
 
-	private function innerHTML($node){
+	private static function innerHTML($node){
 		$doc = new DOMDocument();
 		foreach ($node->childNodes as $child) {
 			$doc->appendChild($doc->importNode($child, true));
@@ -336,7 +336,7 @@ class Emogrifier
         }
 
 		$output = $this->filterOutput === self::FILTER_BODY
-				? $this->innerHTML($xmldoc->documentElement->firstChild)
+				? self::innerHTML($xmldoc->documentElement->firstChild)
 				: $xmldoc->saveHTML();
 
 		return $this->preserveEncoding
