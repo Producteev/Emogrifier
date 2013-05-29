@@ -128,6 +128,14 @@ class Emogrifier
         }
     }
 
+	private function innerHTML($node){
+		$doc = new DOMDocument();
+		foreach ($node->childNodes as $child) {
+			$doc->appendChild($doc->importNode($child, true));
+		}
+		return $doc->saveHTML();
+	}
+
     // applies the CSS you submit to the html you submit. places the css inline
     public function emogrify()
     {
@@ -147,12 +155,6 @@ class Emogrifier
         $xmldoc->strictErrorChecking = false;
         $xmldoc->formatOutput = true;
         $xmldoc->loadHTML($body);
-        if ($this->filterOutput === self::FILTER_BODY) {
-            // remove <!DOCTYPE
-            $xmldoc->removeChild($xmldoc->firstChild);
-            // remove <html><body></body></html>
-            $xmldoc->replaceChild($xmldoc->firstChild->firstChild->firstChild, $xmldoc->firstChild);
-        }
         $xmldoc->normalizeDocument();
 
         $xpath = new DOMXPath($xmldoc);
@@ -333,11 +335,13 @@ class Emogrifier
             }
         }
 
-        if ($this->preserveEncoding) {
-            return mb_convert_encoding($xmldoc->saveHTML(), $encoding, 'HTML-ENTITIES');
-        } else {
-            return $xmldoc->saveHTML();
-        }
+		$output = $this->filterOutput === self::FILTER_BODY
+				? $this->innerHTML($xmldoc->documentElement->firstChild)
+				: $xmldoc->saveHTML();
+
+		return $this->preserveEncoding
+				? mb_convert_encoding($output, $encoding, 'HTML-ENTITIES')
+				: $output;
     }
 
     protected function sortBySelectorPrecedence($a, $b)
