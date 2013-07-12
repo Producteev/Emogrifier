@@ -1,30 +1,29 @@
 <?php
 
-/*
-The MIT License (MIT)
-
-Copyright (c) 2008-2013 pelago
-Copyright (c) 2013 silverorange
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
-
+/**
+ * The MIT License (MIT)
+ * 
+ * Copyright (c) 2008-2013 pelago
+ * Copyright (c) 2013 silverorange
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 class Emogrifier
 {
     const
@@ -107,9 +106,8 @@ class Emogrifier
 
     public function removeUnprocessableHTMLTag($tag)
     {
-        if (($key = array_search($tag,$this->unprocessableHTMLTags)) !== false) {
-            unset($this->unprocessableHTMLTags[$key]);
-        }
+		$this->unprocessableHTMLTags = array_diff($this->unprocessableHTMLTags,
+			array($tag));
     }
 
     // there are some HTML tags that DOMDocument cannot process, and will throw an error if it encounters them.
@@ -123,9 +121,8 @@ class Emogrifier
 
     public function removeExcludedSelector($selector)
     {
-        if (($key = array_search($selector,$this->excludedSelectors)) !== false) {
-            unset($this->excludedSelectors[$key]);
-        }
+		$this->excludedSelectors = array_diff($this->excludedSelectors,
+			array($selector));
     }
 
 	private static function innerHTML($node){
