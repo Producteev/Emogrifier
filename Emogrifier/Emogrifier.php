@@ -154,6 +154,7 @@ class Emogrifier
         $xmldoc->encoding = $encoding;
         $xmldoc->strictErrorChecking = false;
         $xmldoc->formatOutput = true;
+		libxml_use_internal_errors(true);
         $xmldoc->loadHTML($body);
         $xmldoc->normalizeDocument();
 
