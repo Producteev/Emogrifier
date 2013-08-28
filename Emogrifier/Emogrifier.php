@@ -2,20 +2,20 @@
 
 /**
  * The MIT License (MIT)
- * 
+ *
  * Copyright (c) 2008-2013 pelago
  * Copyright (c) 2013 silverorange
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -495,17 +495,18 @@ class Emogrifier
 
     protected function cssStyleDefinitionToArray($style)
     {
-        $definitions = explode(';',$style);
         $retArr = array();
-        foreach ($definitions as $def) {
-            if (empty($def) || strpos($def, ':') === false) {
-                continue;
-            }
-            list($key,$value) = explode(':',$def,2);
-            if (empty($key) || strlen(trim($value)) === 0) {
-                continue;
-            }
-            $retArr[trim($key)] = trim($value);
+		foreach (explode(';', $style) as $def) {
+            $list = explode(':', $def, 2);
+			if (count($list) >= 2) {
+				list($key, $value) = $list;
+				if (!empty($key)) {
+					$value = trim($value);
+					if (isset($value{0})) {
+						$retArr[trim($key)] = $value;
+					}
+				}
+			}
         }
 
         return $retArr;
