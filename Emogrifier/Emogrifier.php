@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2008-2013 pelago
  * Copyright (c) 2013 silverorange
+ * Copyright (c) 2013 Martijn W. van der Lee
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -157,24 +158,6 @@ class Emogrifier
 
         $xpath = new DOMXPath($xmldoc);
 
-        // before be begin processing the CSS file, parse the document and normalize all existing CSS attributes (changes 'DISPLAY: none' to 'display: none');
-        // we wouldn't have to do this if DOMXPath supported XPath 2.0.
-        // also store a reference of nodes with existing inline styles so we don't overwrite them
-        $vistedNodes = $vistedNodeRef = array();
-        $nodes = @$xpath->query('//*[@style]');
-        foreach ($nodes as $node) {
-            $normalizedOrigStyle = preg_replace('/[A-z\-]+(?=\:)/Se',"strtolower('\\0')", $node->getAttribute('style'));
-
-            // in order to not overwrite existing style attributes in the HTML, we have to save the original HTML styles
-            $nodeKey = md5($node->getNodePath());
-            if (!isset($vistedNodeRef[$nodeKey])) {
-                $vistedNodeRef[$nodeKey] = $this->cssStyleDefinitionToArray($normalizedOrigStyle);
-                $vistedNodes[$nodeKey]   = $node;
-            }
-
-            $node->setAttribute('style', $normalizedOrigStyle);
-        }
-
         // grab any existing style blocks from the html and append them to the existing CSS
         // (these blocks should be appended so as to have precedence over conflicting styles in the existing CSS)
         $css = $this->css;
@@ -256,9 +239,10 @@ class Emogrifier
         }
 
         foreach ($this->caches[self::CACHE_CSS][$csskey] as $value) {
+			$newStyleArr = $this->cssStyleDefinitionToArray($value['attributes']);
 
             // query the body for the xpath selector
-            $nodes = $xpath->query($this->translateCSStoXpath(trim($value['selector'])));
+            $nodes = $xpath->query($this->translateCSStoXpath($value['selector']));
 
             foreach ($nodes as $node) {
                 // Exclude any nodes selected through the $excludeNodes attribute
@@ -271,14 +255,14 @@ class Emogrifier
                 // if it has a style attribute, get it, process it, and append (overwrite) new stuff
                 if ($node->hasAttribute('style')) {
                     // break it up into an associative array
+		            $oldStyle = preg_replace('/[A-z\-]+(?=\:)/Se',"strtolower('\\0')", $node->getAttribute('style'));
                     $oldStyleArr = $this->cssStyleDefinitionToArray($node->getAttribute('style'));
-                    $newStyleArr = $this->cssStyleDefinitionToArray($value['attributes']);
 
                     // New styles overwrite the old styles by default (not technically accurate, but close enough)
                     // Set the $overwriteDuplicateStyles to false to keep old styles if present.
                     $combinedArr = $this->overwriteDuplicateStyles
-                                 ? array_merge($oldStyleArr,$newStyleArr)
-                                 : array_merge($newStyleArr,$oldStyleArr);
+                                 ? $newStyleArr + $oldStyleArr
+                                 : $oldStyleArr + $newStyleArr;
 
                     $style = '';
                     foreach ($combinedArr as $k => $v) {
@@ -286,24 +270,10 @@ class Emogrifier
                     }
                 } else {
                     // otherwise create a new style
-                    $style = trim($value['attributes']);
+                    $style = $value['attributes'];
                 }
                 $node->setAttribute('style', $style);
             }
-        }
-
-        // now iterate through the nodes that contained inline styles in the original HTML
-        foreach ($vistedNodeRef as $nodeKey => $origStyleArr) {
-            $node = $vistedNodes[$nodeKey];
-            $currStyleArr = $this->cssStyleDefinitionToArray($node->getAttribute('style'));
-
-            $combinedArr = array_merge($currStyleArr, $origStyleArr);
-            $style = '';
-            foreach ($combinedArr as $k => $v) {
-                $style .= (strtolower($k) . ':' . $v . ';');
-            }
-
-            $node->setAttribute('style', $style);
         }
 
         // This removes styles from your email that contain display:none.
