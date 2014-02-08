@@ -145,6 +145,11 @@ class Emogrifier
             $body = preg_replace("/<\/?($unprocessableHTMLTags)[^>]*>/i",'',$body);
         }
 
+		// if no body, wrap in a body to prevent introducing paragraph tag
+		if (preg_match('/<body\W/', $body) === 0) {
+			$body = '<body>'.$body.'</body>';
+		}
+
         $encoding = mb_detect_encoding($body);
         $body = mb_convert_encoding($body, 'HTML-ENTITIES', $encoding);
 
