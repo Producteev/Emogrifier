@@ -3,6 +3,7 @@ Emogrifier
 
 Emogrifier by Pelago (http://www.pelagodesign.com/sidecar/emogrifier/)
 
-Producteev isn't the creator or owner of this code.
-This code is released under the MIT Licence. (see LICENCE.txt)
+There is now an official repository of Emogrifier:
+[https://github.com/jjriv/emogrifier](https://github.com/jjriv/emogrifier)
 
+You should use the official repository instead of this one.
