@@ -62,6 +62,12 @@ class Emogrifier
     public $overwriteDuplicateStyles = true;
 
     /**
+     * Delete invisible nodes
+     * @var bool
+     */
+    public $shouldKeepInvisibleNodes  = true;
+    
+    /**
      * Customize how output is filtered.
      * @var int
      */
@@ -281,20 +287,22 @@ class Emogrifier
             }
         }
 
-        // This removes styles from your email that contain display:none.
-        // We need to look for display:none, but we need to do a case-insensitive search. Since DOMDocument only supports XPath 1.0,
-        // lower-case() isn't available to us. We've thus far only set attributes to lowercase, not attribute values. Consequently, we need
-        // to translate() the letters that would be in 'NONE' ("NOE") to lowercase.
-        $nodes = $xpath->query('//*[contains(translate(translate(@style," ",""),"NOE","noe"),"display:none")]');
-
-        // The checks on parentNode and is_callable below ensure that if we've deleted the parent node,
-        // we don't try to call removeChild on a nonexistent child node
-        if ($nodes->length > 0) {
-            foreach ($nodes as $node) {
-                if ($node->parentNode && is_callable(array($node->parentNode,'removeChild'))) {
-                    $node->parentNode->removeChild($node);
-                }
-            }
+        if (!$this->shouldKeepInvisibleNodes) {
+	        // This removes styles from your email that contain display:none.
+	        // We need to look for display:none, but we need to do a case-insensitive search. Since DOMDocument only supports XPath 1.0,
+	        // lower-case() isn't available to us. We've thus far only set attributes to lowercase, not attribute values. Consequently, we need
+	        // to translate() the letters that would be in 'NONE' ("NOE") to lowercase.
+	        $nodes = $xpath->query('//*[contains(translate(translate(@style," ",""),"NOE","noe"),"display:none")]');
+	
+	        // The checks on parentNode and is_callable below ensure that if we've deleted the parent node,
+	        // we don't try to call removeChild on a nonexistent child node
+	        if ($nodes->length > 0) {
+	            foreach ($nodes as $node) {
+	                if ($node->parentNode && is_callable(array($node->parentNode,'removeChild'))) {
+	                    $node->parentNode->removeChild($node);
+	                }
+	            }
+	        }
         }
 
         // add back in preserved media query styles
